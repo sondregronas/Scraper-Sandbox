@@ -90,9 +90,9 @@ async def scrape_queries(queries: list) -> None:
     kontoer = [parse_konto(str(html)) for html in htmls]
 
     # Write to json
-    acts = {konto.id: {'tittel': konto.tittel, 'beskrivelse': konto.beskrivelse} for konto in kontoer}
+    json_data = {konto.id: {'tittel': konto.tittel, 'beskrivelse': konto.beskrivelse} for konto in kontoer}
     with open(ACCOUNTS_FILE, 'w+', encoding='utf-8') as f:
-        f.write(json.dumps(acts, ensure_ascii=False, indent=4))
+        f.write(json.dumps(json_data, ensure_ascii=False, indent=4))
 
     # Stop the loop
     asyncio.get_event_loop().stop()
@@ -106,7 +106,7 @@ def scrape_async() -> None:
 
 
 def get_accounts() -> dict:
-    """Returns a dictionary of all accounts, with the account id as the key, and a dictionary of the account's"""
+    """Returns a dictionary of all accounts, using the account id as the key"""
     try:
         with open(ACCOUNTS_FILE, 'r', encoding='utf-8') as f:
             print(f'[INFO] Reading from {ACCOUNTS_FILE}')
