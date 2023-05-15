@@ -1,6 +1,7 @@
 import asyncio
 import aiohttp
 import json
+import time
 from bs4 import BeautifulSoup
 from dataclasses import dataclass
 
@@ -66,8 +67,8 @@ def parse_konto(html: str) -> Konto:
     return Konto(acc_id, title, description.text.strip())
 
 
-async def scrape(url) -> str | None:
-    """Scrapes the given url and returns the html as a string, or None if the page does not exist"""
+async def scrape(url, attempts: int = 0) -> str | None:
+    """Scrapes the given url and returns the html as a string, or None if the page does not exist (3 retries)"""
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
@@ -75,7 +76,11 @@ async def scrape(url) -> str | None:
             elif response.status == 404:
                 return None
             else:
-                raise Exception(f'[ERROR] Got status code: {response.status}')
+                if attempts == 3:
+                    raise Exception(f'[ERROR] Scraping failed, got status code: {response.status}')
+                print(f'[WARNING] Got status code: {response.status}, retrying in 3 seconds... (attempt {attempts + 1} of 3)')
+                time.sleep(3)
+                return await scrape(url, attempts + 1)
 
 
 async def scrape_queries(queries: list) -> None:
